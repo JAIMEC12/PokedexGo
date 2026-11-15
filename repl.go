@@ -7,41 +7,30 @@ import (
 	"strings"
 )
 
+type config struct{
+	commands map[string]cliCommand
+}
+
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(cfg *config) error
 }
 
 func cleanInput(text string) []string {
 	return strings.Fields(text)
 }
 
-func getCommands() map[string]cliCommand{
-	return map[string]cliCommand{
-		"exit": {
-			name:        "exit",
-			description: "Exit the Pokedex",
-			callback:    commandExit,
-		},
-		"help": {
-			name:        "help",
-			description: "Show the help menu",
-			callback:    commandHelp,
-		},
-	}
-}
-
-func startRepl() {
+func startRepl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		userInput := scanner.Text()
 		userInputClean := cleanInput(userInput)
-		supportedComand, exists := getCommands() [strings.ToLower(userInputClean[0])]
+		supportedComand, exists := cfg.commands[strings.ToLower(userInputClean[0])]
 		if exists {
-			err := supportedComand.callback()
+			err := supportedComand.callback(cfg)
 			if err != nil {
 				fmt.Println("Error:", err)
 			}
